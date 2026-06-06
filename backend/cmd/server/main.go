@@ -12,6 +12,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/guisantosalves/productivity-tracker/internal/database"
 	"github.com/guisantosalves/productivity-tracker/internal/handler"
+	"github.com/guisantosalves/productivity-tracker/internal/repository"
+	"github.com/guisantosalves/productivity-tracker/internal/usecase"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
@@ -20,8 +23,19 @@ func registerTask(router *gin.Engine) {
 	taskHandler.RegisterRoutes(router)
 }
 
+func registerTaskCategory(router *gin.Engine, db *pgxpool.Pool) {
+	categoryRepo := repository.NewTaskCategoryRepository(db)
+	categoryUsecase := usecase.NewTaskCategoryUsecase(categoryRepo)
+	categoryHandler := handler.NewTaskCategoryHandler(categoryUsecase)
+
+	categoryHandler.RegisterRoutes(router)
+}
+
 func main() {
-	godotenv.Load()
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: .env file not found, using system env vars")
+	}
+
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 
@@ -32,18 +46,18 @@ func main() {
 	defer pool.Close()
 
 	router := gin.Default()
-	port := os.Getenv("PORT")
 
 	// rigisters
 	registerTask(router)
+	registerTaskCategory(router, pool)
 
 	srv := &http.Server{
-		Addr:    ":" + port,
+		Addr:    ":" + os.Getenv("PORT"),
 		Handler: router,
 	}
 
 	go func() {
-		log.Printf("Server running on port: %s", port)
+		log.Printf("Server running on port: %s", os.Getenv("PORT"))
 		err := srv.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
 			log.Fatal(err)
