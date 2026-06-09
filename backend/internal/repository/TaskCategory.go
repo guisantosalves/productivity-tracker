@@ -32,17 +32,67 @@ func (t *TaskCategoryRepository) CreateTaskCategory(ctx context.Context, taskCT 
 
 // Delete implements [domain.TaskCategoryRepository].
 func (t *TaskCategoryRepository) Delete(ctx context.Context, id string) error {
-	panic("unimplemented")
+	query := `
+		DELETE FROM TaskCategory WHERE id = $1
+	`
+
+	tag, err := t.db.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("delete taskCategory repo: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("delete taskCategory repo: %w", domain.ERR_TASK_CATEGORY_NOT_FOUND)
+	}
+
+	return nil
 }
 
 // List implements [domain.TaskCategoryRepository].
 func (t *TaskCategoryRepository) List(ctx context.Context) ([]domain.TaskCategory, error) {
-	panic("unimplemented")
+	query := `
+		SELECT id, title FROM TaskCategory
+	`
+
+	rows, err := t.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("List taskCategory repo: %w", err)
+	}
+	defer rows.Close()
+
+	var resultList []domain.TaskCategory
+	for rows.Next() {
+		var currTaskCategory domain.TaskCategory
+		err := rows.Scan(
+			&currTaskCategory.ID,
+			&currTaskCategory.Title,
+		)
+		if err != nil {
+			return nil, fmt.Errorf("List taskCategory repo: %w", err)
+		}
+		resultList = append(resultList, currTaskCategory)
+	}
+
+	return resultList, nil
 }
 
 // FindById implements [domain.TaskCategoryRepository].
 func (t *TaskCategoryRepository) FindById(ctx context.Context, id string) (*domain.TaskCategory, error) {
-	panic("unimplemented")
+	query := `
+		SELECT id, title FROM TaskCategory WHERE id = $1
+	`
+
+	currTaskCategory := &domain.TaskCategory{}
+	err := t.db.QueryRow(ctx, query, id).Scan(
+		&currTaskCategory.ID,
+		&currTaskCategory.Title,
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("findbyid taskCategory repo: %w", err)
+	}
+
+	return currTaskCategory, nil
 }
 
 func NewTaskCategoryRepository(db *pgxpool.Pool) domain.TaskCategoryRepository {

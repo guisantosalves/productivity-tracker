@@ -46,6 +46,72 @@ func (tc *TaskCategoryHandler) CreatingCategory(c *gin.Context) {
 	})
 }
 
+func (tc *TaskCategoryHandler) ListAllTaskCategory(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	result, err := tc.usecase.List(ctx)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, result)
+}
+
+func (tc *TaskCategoryHandler) DeleteTaskCategory(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.JSON(400, gin.H{
+			"error": "Invalid param",
+		})
+		return
+	}
+
+	err := tc.usecase.Delete(ctx, id)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, gin.H{
+		"status": "Deleted",
+	})
+}
+
+func (tc *TaskCategoryHandler) FindByIdTaskCategory(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	id := c.Param("id")
+	if len(id) == 0 {
+		c.JSON(400, gin.H{
+			"error": "Invalid param",
+		})
+		return
+	}
+
+	result, err := tc.usecase.FindById(ctx, id)
+	if err != nil {
+		c.JSON(400, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, result)
+}
+
 func (tc *TaskCategoryHandler) RegisterRoutes(c *gin.Engine) {
 	c.POST("/task-category", tc.CreatingCategory)
+	c.GET("/task-category", tc.ListAllTaskCategory)
+	c.DELETE("/task-category/:id", tc.DeleteTaskCategory)
+	c.GET("/task-category/:id", tc.FindByIdTaskCategory)
 }

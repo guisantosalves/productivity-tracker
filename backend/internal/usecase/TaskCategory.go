@@ -23,15 +23,15 @@ func (t *TaskCategoryUsecase) CreateTaskCategory(ctx context.Context, taskCT *do
 
 // Delete implements [domain.TaskCategoryUsecase].
 func (t *TaskCategoryUsecase) Delete(ctx context.Context, id string) error {
-	panic("unimplemented")
+	return t.repo.Delete(ctx, id)
 }
 
 // FindById implements [domain.TaskCategoryUsecase].
 func (t *TaskCategoryUsecase) FindById(ctx context.Context, id string) (*domain.TaskCategory, error) {
-	panic("unimplemented")
+	return t.repo.FindById(ctx, id)
 }
 
 // List implements [domain.TaskCategoryUsecase].
 func (t *TaskCategoryUsecase) List(ctx context.Context) ([]domain.TaskCategory, error) {
-	panic("unimplemented")
+	return t.repo.List(ctx)
 }

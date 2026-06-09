@@ -32,5 +32,5 @@ type TaskUsecase interface {
 }
 
 var (
-	ERR_TASK_NOT_FOUND = errors.New("taskCategory not found ")
+	ERR_TASK_NOT_FOUND = errors.New("task not found ")
 )
