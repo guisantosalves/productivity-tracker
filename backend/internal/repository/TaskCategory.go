@@ -95,6 +95,24 @@ func (t *TaskCategoryRepository) FindById(ctx context.Context, id string) (*doma
 	return currTaskCategory, nil
 }
 
+// helper
+func (t *TaskCategoryRepository) TaskCategoryIdExistsById(ctx context.Context, id string) (bool, error) {
+	var exists bool
+	queryVerifyTaskCategory := `
+		SELECT EXISTS(SELECT 1 FROM TaskCategory WHERE id = $1) 
+	`
+
+	if err := t.db.QueryRow(
+		ctx,
+		queryVerifyTaskCategory,
+		id,
+	).Scan(&exists); err != nil {
+		return false, fmt.Errorf("Create task repo: %w", domain.ERR_TASK_CATEGORY_NOT_FOUND)
+	}
+
+	return exists, nil
+}
+
 func NewTaskCategoryRepository(db *pgxpool.Pool) domain.TaskCategoryRepository {
 	return &TaskCategoryRepository{
 		db: db,

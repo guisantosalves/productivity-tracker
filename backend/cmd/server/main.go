@@ -18,18 +18,18 @@ import (
 	"github.com/joho/godotenv"
 )
 
-func registerTask(router *gin.Engine, db *pgxpool.Pool) {
-	taskrepo := repository.NewTaskRepository(db)
-	taskUC := usecase.NewTaskUsecase(taskrepo)
-	taskHandler := handler.NewTaskHandler(taskUC)
-	taskHandler.RegisterRoutes(router)
-}
-
-func registerTaskCategory(router *gin.Engine, db *pgxpool.Pool) {
+func registers(router *gin.Engine, db *pgxpool.Pool) {
+	// category
 	categoryRepo := repository.NewTaskCategoryRepository(db)
 	categoryUsecase := usecase.NewTaskCategoryUsecase(categoryRepo)
 	categoryHandler := handler.NewTaskCategoryHandler(categoryUsecase)
 	categoryHandler.RegisterRoutes(router)
+
+	// task
+	taskrepo := repository.NewTaskRepository(db, categoryRepo)
+	taskUC := usecase.NewTaskUsecase(taskrepo)
+	taskHandler := handler.NewTaskHandler(taskUC)
+	taskHandler.RegisterRoutes(router)
 }
 
 func main() {
@@ -48,9 +48,8 @@ func main() {
 
 	router := gin.Default()
 
-	// rigisters
-	registerTask(router, pool)
-	registerTaskCategory(router, pool)
+	// Dependency Injections
+	registers(router, pool)
 
 	srv := &http.Server{
 		Addr:    ":" + os.Getenv("PORT"),

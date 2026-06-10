@@ -10,25 +10,8 @@ import (
 )
 
 type TaskRepository struct {
-	db *pgxpool.Pool
-}
-
-// helper
-func (t *TaskRepository) taskCategoryIdExistsById(ctx context.Context, id string) (bool, error) {
-	var exists bool
-	queryVerifyTaskCategory := `
-		SELECT EXISTS(SELECT 1 FROM TaskCategory WHERE id = $1) 
-	`
-
-	if err := t.db.QueryRow(
-		ctx,
-		queryVerifyTaskCategory,
-		id,
-	).Scan(&exists); err != nil {
-		return false, fmt.Errorf("Create task repo: %w", domain.ERR_TASK_CATEGORY_NOT_FOUND)
-	}
-
-	return exists, nil
+	taskCategoryRepo domain.TaskCategoryRepository
+	db               *pgxpool.Pool
 }
 
 // CreateTask implements [domain.TaskRepository].
@@ -39,7 +22,7 @@ func (t *TaskRepository) CreateTask(ctx context.Context, task *domain.Task) erro
 		RETURNING id
 	`
 
-	exists, err := t.taskCategoryIdExistsById(ctx, task.Type.ID)
+	exists, err := t.taskCategoryRepo.TaskCategoryIdExistsById(ctx, task.Type.ID)
 	if err != nil {
 		return err
 	}
@@ -83,21 +66,119 @@ func (t *TaskRepository) Delete(ctx context.Context, id string) error {
 
 // FindTaskById implements [domain.TaskRepository].
 func (t *TaskRepository) FindTaskById(ctx context.Context, id string) (*domain.Task, error) {
-	panic("unimplemented")
+	query := `
+		SELECT id, title, typeId, dateStart, dateEnd, descricao FROM Task WHERE id = $1
+	`
+
+	taskResult := &domain.Task{}
+	if err := t.db.QueryRow(
+		ctx,
+		query,
+		id).Scan(
+		&taskResult.Id,
+		&taskResult.Title,
+		&taskResult.Type.ID,
+		&taskResult.DateStart,
+		&taskResult.DateEnd,
+		&taskResult.Descricao,
+	); err != nil {
+		return nil, fmt.Errorf("FindTaskById repo: %w", err)
+	}
+
+	// I need to find the taskCategory to make the merge
+	Tcategory, err := t.taskCategoryRepo.FindById(ctx, taskResult.Type.ID)
+	if err != nil {
+		return nil, fmt.Errorf("FindTaskById Invalid task category %s", taskResult.Type.ID)
+	}
+
+	// merging
+	taskResult.Type = *Tcategory
+
+	return taskResult, nil
 }
 
 // ListTask implements [domain.TaskRepository].
 func (t *TaskRepository) ListTask(ctx context.Context) ([]domain.Task, error) {
-	panic("unimplemented")
+	query := `
+		SELECT id, title, typeId, dateStart, dateEnd, descricao FROM Task
+	`
+
+	rows, err := t.db.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("ListTask repo: %w", err)
+	}
+	defer rows.Close()
+
+	var results []domain.Task
+	for rows.Next() {
+		currTask := &domain.Task{}
+
+		err := rows.Scan(
+			&currTask.Id,
+			&currTask.Title,
+			&currTask.Type.ID,
+			&currTask.DateStart,
+			&currTask.DateEnd,
+			&currTask.Descricao,
+		)
+
+		if err != nil {
+			return nil, fmt.Errorf("ListTask repo: %w", err)
+		}
+
+		results = append(results, *currTask)
+	}
+
+	return results, nil
 }
 
 // UpdateTask implements [domain.TaskRepository].
-func (t *TaskRepository) UpdateTask(ctx context.Context, id string, title string, dateStart time.Time, dateEnd time.Time, time string) error {
-	panic("unimplemented")
+func (t *TaskRepository) UpdateTask(
+	ctx context.Context,
+	id string,
+	title string,
+	typeid string,
+	dateStart time.Time,
+	dateEnd time.Time,
+	descricao string,
+) error {
+	query := `
+		UPDATE Task SET title = $1, typeId = $2, dateStart = $3, dateEnd = $4, descricao = $5 WHERE id = $6
+	`
+
+	exixts, errorVerifyTC := t.taskCategoryRepo.TaskCategoryIdExistsById(ctx, typeid)
+	if errorVerifyTC != nil {
+		return errorVerifyTC
+	}
+
+	if !exixts {
+		return fmt.Errorf("updating Task repo: %w", domain.ERR_TASK_CATEGORY_NOT_FOUND)
+	}
+
+	tag, err := t.db.Exec(
+		ctx,
+		query,
+		title,
+		typeid,
+		dateStart,
+		dateEnd,
+		descricao,
+		id,
+	)
+	if err != nil {
+		return fmt.Errorf("updating Task repo: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("updating Task repo: %w", domain.ERR_TASK_NOT_FOUND)
+	}
+
+	return nil
 }
 
-func NewTaskRepository(db *pgxpool.Pool) domain.TaskRepository {
+func NewTaskRepository(db *pgxpool.Pool, taskCategoryRepo domain.TaskCategoryRepository) domain.TaskRepository {
 	return &TaskRepository{
-		db: db,
+		db:               db,
+		taskCategoryRepo: taskCategoryRepo,
 	}
 }

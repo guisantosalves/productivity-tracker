@@ -15,6 +15,7 @@ type TaskCategoryRepository interface {
 	List(ctx context.Context) ([]TaskCategory, error)
 	Delete(ctx context.Context, id string) error
 	FindById(ctx context.Context, id string) (*TaskCategory, error)
+	TaskCategoryIdExistsById(ctx context.Context, id string) (bool, error)
 }
 
 type TaskCategoryUsecase interface {

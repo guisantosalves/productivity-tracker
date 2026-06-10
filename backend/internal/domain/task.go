@@ -17,7 +17,7 @@ type Task struct {
 
 type TaskRepository interface {
 	CreateTask(ctx context.Context, task *Task) error
-	UpdateTask(ctx context.Context, id string, title string, dateStart time.Time, dateEnd time.Time, time string) error
+	UpdateTask(ctx context.Context, id string, title string, typeid string, dateStart time.Time, dateEnd time.Time, descricao string) error
 	Delete(ctx context.Context, id string) error
 	ListTask(ctx context.Context) ([]Task, error)
 	FindTaskById(ctx context.Context, id string) (*Task, error)
@@ -25,7 +25,7 @@ type TaskRepository interface {
 
 type TaskUsecase interface {
 	CreateTask(ctx context.Context, task *Task) error
-	UpdateTask(ctx context.Context, id string, title string, dateStart time.Time, dateEnd time.Time, time string) error
+	UpdateTask(ctx context.Context, id string, title string, typeid string, dateStart time.Time, dateEnd time.Time, descricao string) error
 	Delete(ctx context.Context, id string) error
 	ListTask(ctx context.Context) ([]Task, error)
 	FindTaskById(ctx context.Context, id string) (*Task, error)
