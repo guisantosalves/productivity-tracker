@@ -65,7 +65,20 @@ func (t *TaskRepository) CreateTask(ctx context.Context, task *domain.Task) erro
 
 // Delete implements [domain.TaskRepository].
 func (t *TaskRepository) Delete(ctx context.Context, id string) error {
-	panic("unimplemented")
+	query := `
+		DELETE FROM Task WHERE id = $1
+	`
+
+	tag, err := t.db.Exec(ctx, query, id)
+	if err != nil {
+		return fmt.Errorf("Delete Task repo: %w", err)
+	}
+
+	if tag.RowsAffected() == 0 {
+		return fmt.Errorf("Delete Task repo: %w", domain.ERR_TASK_NOT_FOUND)
+	}
+
+	return nil
 }
 
 // FindTaskById implements [domain.TaskRepository].
