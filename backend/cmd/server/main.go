@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/guisantosalves/productivity-tracker/internal/database"
 	"github.com/guisantosalves/productivity-tracker/internal/handler"
@@ -47,6 +48,21 @@ func main() {
 	defer pool.Close()
 
 	router := gin.Default()
+
+	if os.Getenv("ENVIRONMENT") == "dev" {
+		router.Use(cors.New(cors.Config{
+			AllowAllOrigins: true,
+			AllowMethods:    []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+			AllowHeaders:    []string{"Origin", "Content-Type", "Authorization"},
+		}))
+	} else {
+		router.Use(cors.New(cors.Config{
+			AllowOrigins:     []string{"http://localhost:5173"}, // FE na rede
+			AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+			AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+			AllowCredentials: true,
+		}))
+	}
 
 	// Dependency Injections
 	registers(router, pool)

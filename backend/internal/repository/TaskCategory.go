@@ -36,6 +36,9 @@ func (t *TaskCategoryRepository) Delete(ctx context.Context, id string) error {
 		DELETE FROM TaskCategory WHERE id = $1
 	`
 
+	// TODO: VERIFICAR SE TEM ALGUMA RELAÇÃO COM A TASK
+	// SE TIVER RELAÇÃO, NÃO DEIXAR EXCLUIR
+
 	tag, err := t.db.Exec(ctx, query, id)
 	if err != nil {
 		return fmt.Errorf("delete taskCategory repo: %w", err)
