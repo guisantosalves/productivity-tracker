@@ -43,7 +43,6 @@ export const TaskCategoryPage = () => {
   }, [fetchCategoryList]);
 
   const columns: Column<TaskCategory>[] = [
-    { key: "id", header: "#" },
     { key: "title", header: "Título" },
     {
       key: "btn",

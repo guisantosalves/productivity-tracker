@@ -35,9 +35,18 @@ func (t *TaskCategoryRepository) Delete(ctx context.Context, id string) error {
 	query := `
 		DELETE FROM TaskCategory WHERE id = $1
 	`
+	var exists bool
 
-	// TODO: VERIFICAR SE TEM ALGUMA RELAÇÃO COM A TASK
-	// SE TIVER RELAÇÃO, NÃO DEIXAR EXCLUIR
+	queryToVerifyRelation := `
+		SELECT EXISTS(SELECT 1 from Task WHERE typeId = $1) 
+	`
+	if err := t.db.QueryRow(ctx, queryToVerifyRelation, id).Scan(&exists); err != nil {
+		return fmt.Errorf("error deleting taskcategory: %w", err)
+	}
+
+	if exists {
+		return fmt.Errorf("error deleting taskcategory: %w", domain.ERR_TASK_CATEGORY_ALREADY_USED)
+	}
 
 	tag, err := t.db.Exec(ctx, query, id)
 	if err != nil {

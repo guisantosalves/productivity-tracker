@@ -26,6 +26,7 @@ export const ModalFormTaskCategory: React.FC<ModalFormTaskCategoryProps> = ({
     handleSubmit,
     watch,
     formState: { errors },
+    reset,
   } = useForm<FormTaskCategory>();
 
   const onSubmit: SubmitHandler<FormTaskCategory> = (data) => {
@@ -34,10 +35,16 @@ export const ModalFormTaskCategory: React.FC<ModalFormTaskCategoryProps> = ({
       title: data.title,
     };
     createCategory(tCateg);
+    reset();
   };
 
   return (
-    <Modal isOpen={open} onClose={onClose}>
+    <Modal
+      isOpen={open}
+      onClose={() => {
+        onClose();
+      }}
+    >
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="flex flex-col gap-2">
           <div>

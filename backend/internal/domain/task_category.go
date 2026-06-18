@@ -26,5 +26,6 @@ type TaskCategoryUsecase interface {
 }
 
 var (
-	ERR_TASK_CATEGORY_NOT_FOUND = errors.New("taskCategory not found ")
+	ERR_TASK_CATEGORY_NOT_FOUND    = errors.New("taskCategory not found ")
+	ERR_TASK_CATEGORY_ALREADY_USED = errors.New("taskCategory used by another entity ")
 )
