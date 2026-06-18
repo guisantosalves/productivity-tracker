@@ -20,9 +20,21 @@ export function Table<T extends object>({
   className = "",
 }: TableProps<T>) {
   const rows = data ?? [];
+  const getNestedValue = (obj: unknown, path: string): unknown => {
+    // entra ao máximo dentro do nested value
+    // acc -> resultado | key -> valor curr do split
+    // vai retornando até acabar as keys
+    return path.split(".").reduce((acc, key) => {
+      if (acc !== null && acc !== undefined && typeof acc === "object") {
+        return (acc as Record<string, unknown>)[key];
+      }
+      return undefined;
+    }, obj);
+  };
+
   const getCellValue = (row: T, col: Column<T>): React.ReactNode => {
     if (col.render) return col.render(row);
-    const value = row[col.key as keyof T];
+    const value = getNestedValue(row, String(col.key));
     return value !== undefined && value !== null ? String(value) : "—";
   };
 

@@ -100,7 +100,8 @@ func (t *TaskRepository) FindTaskById(ctx context.Context, id string) (*domain.T
 // ListTask implements [domain.TaskRepository].
 func (t *TaskRepository) ListTask(ctx context.Context) ([]domain.Task, error) {
 	query := `
-		SELECT id, title, typeId, dateStart, dateEnd, descricao FROM Task
+		SELECT t.id, t.title, tc.id, tc.title, t.dateStart, t.dateEnd, t.descricao FROM Task t 
+		INNER JOIN TaskCategory tc ON t.typeId = tc.id
 	`
 
 	rows, err := t.db.Query(ctx, query)
@@ -117,6 +118,7 @@ func (t *TaskRepository) ListTask(ctx context.Context) ([]domain.Task, error) {
 			&currTask.Id,
 			&currTask.Title,
 			&currTask.Type.ID,
+			&currTask.Type.Title,
 			&currTask.DateStart,
 			&currTask.DateEnd,
 			&currTask.Descricao,

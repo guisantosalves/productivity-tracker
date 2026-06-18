@@ -11,7 +11,7 @@ type Task struct {
 	Title     string       `json:"title"`
 	Type      TaskCategory `json:"type"`
 	DateStart time.Time    `json:"dateStart"`
-	DateEnd   time.Time    `json:"DateEnd"`
+	DateEnd   time.Time    `json:"dateEnd"`
 	Descricao string       `json:"descricao"`
 }
 
