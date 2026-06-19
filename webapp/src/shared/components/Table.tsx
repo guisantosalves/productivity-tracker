@@ -1,4 +1,5 @@
 import React from "react";
+import { LoadingSpinner } from "./LoadingSpinner";
 
 export interface Column<T> {
   key: keyof T | string;
@@ -11,6 +12,7 @@ interface TableProps<T> {
   data: T[];
   emptyMessage?: string;
   className?: string;
+  loading?: boolean;
 }
 
 export function Table<T extends object>({
@@ -18,6 +20,7 @@ export function Table<T extends object>({
   data = [],
   emptyMessage = "Nenhum dado encontrado.",
   className = "",
+  loading = false,
 }: TableProps<T>) {
   const rows = data ?? [];
   const getNestedValue = (obj: unknown, path: string): unknown => {
@@ -54,7 +57,18 @@ export function Table<T extends object>({
           </tr>
         </thead>
         <tbody>
-          {rows.length === 0 ? (
+          {loading ? (
+            <tr>
+              <td
+                colSpan={columns.length}
+                className="px-4 py-8 text-center"
+              >
+                <div className="flex justify-center">
+                  <LoadingSpinner size="md" />
+                </div>
+              </td>
+            </tr>
+          ) : rows.length === 0 ? (
             <tr>
               <td
                 colSpan={columns.length}

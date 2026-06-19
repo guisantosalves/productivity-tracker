@@ -9,9 +9,17 @@ export interface Task {
   descricao: string;
 }
 
+export interface TaskReq {
+  title: string;
+  type: string;
+  dateStart: Date;
+  dateEnd: Date;
+  descricao: string;
+}
+
 export interface ITaskRepository {
-  CreateTask(task: Task): Promise<boolean>;
-  UpdateTask(task: Task): Promise<boolean>;
+  CreateTask(task: TaskReq): Promise<boolean>;
+  UpdateTask(id: string, task: TaskReq): Promise<boolean>;
   Delete(id: string): Promise<boolean>;
   ListTask(): Promise<Task[]>;
   FindTaskById(id: string): Promise<Task>;

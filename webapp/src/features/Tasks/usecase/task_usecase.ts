@@ -1,4 +1,9 @@
-import type { ITaskRepository, ITaskUsecase, Task } from "../domain/task";
+import type {
+  ITaskRepository,
+  ITaskUsecase,
+  Task,
+  TaskReq,
+} from "../domain/task";
 
 export class TaskUsecase implements ITaskUsecase {
   private readonly taskRepo: ITaskRepository;
@@ -7,7 +12,15 @@ export class TaskUsecase implements ITaskUsecase {
   }
   async CreateTask(task: Task): Promise<boolean> {
     try {
-      return await this.taskRepo.CreateTask(task);
+      if (!task.type.id) throw new Error();
+      const taskRq: TaskReq = {
+        title: task.title,
+        descricao: task.descricao,
+        type: task.type.id,
+        dateEnd: task.dateEnd,
+        dateStart: task.dateStart,
+      };
+      return await this.taskRepo.CreateTask(taskRq);
     } catch (error) {
       return false;
     }
@@ -15,7 +28,15 @@ export class TaskUsecase implements ITaskUsecase {
 
   async UpdateTask(task: Task): Promise<boolean> {
     try {
-      return await this.taskRepo.UpdateTask(task);
+      if (!task.type.id || !task.id) throw new Error();
+      const taskRq: TaskReq = {
+        title: task.title,
+        descricao: task.descricao,
+        type: task.type.id,
+        dateEnd: task.dateEnd,
+        dateStart: task.dateStart,
+      };
+      return await this.taskRepo.UpdateTask(task.id, taskRq);
     } catch (error) {
       return false;
     }

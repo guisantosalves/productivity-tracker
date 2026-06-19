@@ -1,14 +1,14 @@
 import { api } from "../../../lib/axios";
-import type { ITaskUsecase, Task } from "../domain/task";
+import type { ITaskRepository, Task, TaskReq } from "../domain/task";
 
-export class TaskRepository implements ITaskUsecase {
-  async CreateTask(task: Task): Promise<boolean> {
+export class TaskRepository implements ITaskRepository {
+  async CreateTask(task: TaskReq): Promise<boolean> {
     await api.post("/task", task);
     return true;
   }
 
-  async UpdateTask(task: Task): Promise<boolean> {
-    await api.put("/task", task);
+  async UpdateTask(id: string, task: TaskReq): Promise<boolean> {
+    await api.put(`/task/${id}`, task);
     return true;
   }
 

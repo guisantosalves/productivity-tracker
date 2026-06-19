@@ -14,10 +14,13 @@ export const TaskPage = () => {
     undefined,
   );
   const [mdOpen, setMdOpen] = useState<boolean>(false);
+  const [isLoading, setIsloading] = useState(false);
 
   const fetchCategoryList = useCallback(async () => {
+    setIsloading(true);
     const data = await taskService.ListTask();
     setTask(data);
+    setIsloading(false);
   }, []);
 
   const deleteTask = useCallback(async (id: string) => {
@@ -31,13 +34,29 @@ export const TaskPage = () => {
   }, []);
 
   const updateTask = useCallback(async (task: Task) => {
+    setIsloading(true);
     const data = await taskService.UpdateTask(task);
     if (data) {
       toast.success("Atualizado com sucesso com sucesso!");
       fetchCategoryList();
+      setMdOpen(false);
     } else {
       toast.error("Erro ao atualizar!");
     }
+    setIsloading(false);
+  }, []);
+
+  const createTask = useCallback(async (task: Task) => {
+    setIsloading(true);
+    const data = await taskService.CreateTask(task);
+    if (data) {
+      toast.success("Atualizado com sucesso com sucesso!");
+      fetchCategoryList();
+      setMdOpen(false);
+    } else {
+      toast.error("Erro ao atualizar!");
+    }
+    setIsloading(false);
   }, []);
 
   useEffect(() => {
@@ -80,7 +99,12 @@ export const TaskPage = () => {
     <div className="flex-1 h-screen p-4">
       <Header title="Tarefas" Icon={ClipboardList} />
       <div>
-        <Table columns={columns} data={task} emptyMessage="Sem Categorias." />
+        <Table
+          columns={columns}
+          data={task}
+          emptyMessage="Sem Categorias."
+          loading={isLoading}
+        />
       </div>
       <div className="mt-4 flex justify-end">
         <Button
@@ -95,13 +119,13 @@ export const TaskPage = () => {
         </Button>
       </div>
       <ModalFormTask
-        createTask={(item) => {}}
+        createTask={(item) => createTask(item)}
         onClose={() => {
           setMdOpen(false);
         }}
         open={mdOpen}
         selected={selectedTaskEdit}
-        updateTask={(item) => {}}
+        updateTask={(item) => updateTask(item)}
       />
     </div>
   );
