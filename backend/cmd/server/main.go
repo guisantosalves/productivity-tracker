@@ -31,6 +31,12 @@ func registers(router *gin.Engine, db *pgxpool.Pool) {
 	taskUC := usecase.NewTaskUsecase(taskrepo)
 	taskHandler := handler.NewTaskHandler(taskUC)
 	taskHandler.RegisterRoutes(router)
+
+	// user
+	userRepo := repository.NewUserRepository(db)
+	userUsecase := usecase.NewUserUsecase(userRepo)
+	userHandler := handler.NewUserHandler(userUsecase)
+	userHandler.RegisterRoutes(router)
 }
 
 func main() {

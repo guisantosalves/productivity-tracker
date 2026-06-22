@@ -51,7 +51,6 @@ export const ModalFormTask: React.FC<ModalFormTaskProps> = ({
   }, []);
 
   const fillData = (data: Task) => {
-    console.log(data);
     setValue("title", data.title);
     setValue("typeId", data.type.id!);
     setValue("descricao", data.descricao);
