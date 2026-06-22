@@ -12,8 +12,8 @@ export interface Task {
 export interface TaskReq {
   title: string;
   type: string;
-  dateStart: Date;
-  dateEnd: Date;
+  dateStart: string;
+  dateEnd: string;
   descricao: string;
 }
 

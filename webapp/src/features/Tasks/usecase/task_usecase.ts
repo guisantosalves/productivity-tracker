@@ -1,3 +1,4 @@
+import { toLocalIsoString } from "../../../lib/date";
 import type {
   ITaskRepository,
   ITaskUsecase,
@@ -33,8 +34,8 @@ export class TaskUsecase implements ITaskUsecase {
         title: task.title,
         descricao: task.descricao,
         type: task.type.id,
-        dateEnd: task.dateEnd,
-        dateStart: task.dateStart,
+        dateEnd: toLocalIsoString(task.dateEnd),
+        dateStart: toLocalIsoString(task.dateStart),
       };
       return await this.taskRepo.UpdateTask(task.id, taskRq);
     } catch (error) {

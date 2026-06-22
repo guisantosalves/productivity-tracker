@@ -112,6 +112,7 @@ export const TaskPage = () => {
           leftIcon={Plus}
           size="lg"
           onClick={() => {
+            setSelectedTaskEdit(undefined);
             setMdOpen(true);
           }}
         >

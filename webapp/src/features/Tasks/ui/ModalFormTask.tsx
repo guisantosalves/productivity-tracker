@@ -9,6 +9,7 @@ import type { TaskCategory } from "../../tasks_category/domain/task_category";
 import { taskService } from "..";
 import { taskCategoryService } from "../../tasks_category";
 import { toast } from "../../../shared/components/Toast";
+import { toDateTimeLocal } from "../../../lib/date";
 
 interface ModalFormTaskProps {
   open: boolean;
@@ -50,11 +51,12 @@ export const ModalFormTask: React.FC<ModalFormTaskProps> = ({
   }, []);
 
   const fillData = (data: Task) => {
+    console.log(data);
     setValue("title", data.title);
     setValue("typeId", data.type.id!);
     setValue("descricao", data.descricao);
-    setValue("dateStart", String(data.dateStart).slice(0, 10));
-    setValue("dateEnd", String(data.dateEnd).slice(0, 10));
+    setValue("dateStart", toDateTimeLocal(data.dateStart));
+    setValue("dateEnd", toDateTimeLocal(data.dateEnd));
   };
 
   const fetchTaskData = useCallback(async () => {
@@ -76,6 +78,14 @@ export const ModalFormTask: React.FC<ModalFormTaskProps> = ({
   }, [fetchTaskData, selected]);
 
   const onSubmit: SubmitHandler<FormTask> = (data) => {
+    if (!data.dateStart || !data.dateEnd || !data.descricao || !data.title) {
+      toast.error("Todos os campos são obrigatórios");
+      return;
+    }
+    if (data.dateStart > data.dateEnd) {
+      toast.error("Data início incorreta");
+      return;
+    }
     const task: Task = {
       id: selected?.id,
       title: data.title,
@@ -124,21 +134,25 @@ export const ModalFormTask: React.FC<ModalFormTaskProps> = ({
               ))}
             </select>
             {errors.typeId && (
-              <span className="text-xs text-red-500">{errors.typeId.message}</span>
+              <span className="text-xs text-red-500">
+                {errors.typeId.message}
+              </span>
             )}
           </div>
 
           <div className="flex gap-3">
             <TextInput
               label="Data início"
-              type="date"
+              type="datetime-local"
               error={errors.dateStart?.message}
               containerClassName="flex-1"
-              {...register("dateStart", { required: "Esse campo é obrigatório" })}
+              {...register("dateStart", {
+                required: "Esse campo é obrigatório",
+              })}
             />
             <TextInput
               label="Data fim"
-              type="date"
+              type="datetime-local"
               error={errors.dateEnd?.message}
               containerClassName="flex-1"
               {...register("dateEnd", { required: "Esse campo é obrigatório" })}
@@ -151,7 +165,9 @@ export const ModalFormTask: React.FC<ModalFormTaskProps> = ({
               rows={3}
               className="w-full rounded-md bg-white border border-border px-4 py-2 text-sm outline-none resize-none focus:ring-2 focus:ring-primary/50 hover:border-[#f0d98a] placeholder:text-[var(--muted-foreground)]"
               placeholder="Descreva a task..."
-              {...register("descricao")}
+              {...register("descricao", {
+                required: "Esse campo é obrigatório",
+              })}
             />
           </div>
 
